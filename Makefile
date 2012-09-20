@@ -4,10 +4,12 @@ NODE_PATH ?= ./node_modules
 JS_COMPILER = $(NODE_PATH)/uglify-js/bin/uglifyjs
 JS_BEAUTIFIER = $(NODE_PATH)/uglify-js/bin/uglifyjs -b -i 2 -nm -ns
 JS_TESTER = $(NODE_PATH)/vows/bin/vows
+LOCALE ?= en_US
 
 all: \
 	d3.v2.js \
 	d3.v2.min.js \
+	component.json \
 	package.json
 
 # Modify this rule to build your own custom release.
@@ -19,7 +21,7 @@ all: \
 	d3.svg.js \
 	d3.behavior.js \
 	d3.layout.js \
-	d3.csv.js \
+	d3.dsv.js \
 	d3.geo.js \
 	d3.geom.js \
 	d3.time.js \
@@ -80,6 +82,9 @@ d3.core.js: \
 	src/core/uninterpolate.js \
 	src/core/rgb.js \
 	src/core/hsl.js \
+	src/core/hcl.js \
+	src/core/lab.js \
+	src/core/xyz.js \
 	src/core/selection.js \
 	src/core/selection-select.js \
 	src/core/selection-selectAll.js \
@@ -118,6 +123,7 @@ d3.core.js: \
 	src/core/transition-duration.js \
 	src/core/transition-each.js \
 	src/core/transition-transition.js \
+	src/core/tween.js \
 	src/core/timer.js \
 	src/core/mouse.js \
 	src/core/touches.js \
@@ -136,6 +142,7 @@ d3.scale.js: \
 	src/scale/category.js \
 	src/scale/quantile.js \
 	src/scale/quantize.js \
+	src/scale/threshold.js \
 	src/scale/identity.js
 
 d3.svg.js: \
@@ -188,13 +195,14 @@ d3.geo.js: \
 	src/geo/greatArc.js \
 	src/geo/greatCircle.js
 
-d3.csv.js: \
-	src/csv/csv.js \
-	src/csv/parse.js \
-	src/csv/format.js
+d3.dsv.js: \
+	src/dsv/dsv.js \
+	src/dsv/csv.js \
+	src/dsv/tsv.js
 
 d3.time.js: \
 	src/time/time.js \
+	src/time/format-$(LOCALE).js \
 	src/time/format.js \
 	src/time/format-utc.js \
 	src/time/format-iso.js \
@@ -230,10 +238,15 @@ d3%.js: Makefile
 	cat $(filter %.js,$^) | $(JS_BEAUTIFIER) > $@
 	@chmod a-w $@
 
+component.json: src/component.js
+	@rm -f $@
+	node src/component.js > $@
+	@chmod a-w $@
+
 package.json: src/package.js
 	@rm -f $@
 	node src/package.js > $@
 	@chmod a-w $@
 
 clean:
-	rm -f d3*.js package.json
+	rm -f d3*.js package.json component.json
